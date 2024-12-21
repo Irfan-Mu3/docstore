@@ -1,0 +1,15 @@
+{application, librarian,
+ [{description, "docs library"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {l_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, [concierge]},  % PUT DEPENDENCIES HERE
+
+  {licenses, ["Apache-2.0"]},
+  {links, []}
+ ]}.

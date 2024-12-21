@@ -1,0 +1,32 @@
+Tickets:
+  001:
+    Desc: 
+    - Create a rebar3 application that processes documents and sents them to a library. Create the concierge package.
+    AC:
+    - Done/ Ensure that we can start the application via rebar3
+    - Skipped/ That 2 bare nodes are attached (only locally)
+    - Done/ For testing purposes, just allow it to print the results to standard output or a file
+    Cond:
+    - DONE
+  002:
+    Desc:
+    - Add a new rebar3 package called library that will be used to store metadata about document objects.
+    - This will be used to calculate Fscores of the search terms down the line.
+    AC:
+    - Done/ Allow everything to be able to spin up via rebar3 shell
+    - Skipped/ Bare nodes should already spin up via Tickets:001
+    - Done/ The library package does not need to be on a separate node, so do not define any affinities for these packages.
+    - Done/ Be able to insert Tokens indepedently of the concierge library
+    - Done/ Be able to get Fscores
+    - TODO/ Be able to replace documents entirely without keeping behind old Tokens
+    Cond:
+    - TODO
+  003:
+    Desc:
+    - Design in distribution, so that this runs on multinodes
+  004:
+    Desc:
+    - Add in RPC calls via TCP
+  005:
+    Desc:
+    - Add separate table to help with deletions
