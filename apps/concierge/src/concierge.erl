@@ -5,8 +5,8 @@
 insert_doc(Title, Document) ->
   case c_store:lookup(Title) of
     {ok, Pid} ->
-      c_doc_element:replace(Pid, Document);
-      % TODO ensure old tokens are removed
+      c_doc_element:replace(Pid, Document),
+      ok = librarian:remove_doc(Title);
     {error, _} ->
       {ok, Pid} = c_doc_element:create(Document),
       c_store:insert(Title, Pid)
@@ -51,11 +51,11 @@ lookup_doc(Title) ->
     {error, not_found} -> {error, not_found}
   end.
 
-
 delete(Title) ->
   case c_store:lookup(Title) of
     {ok, Pid} ->
-      c_doc_element:delete(Pid);
+      c_doc_element:delete(Pid),
+      librarian:remove_doc(Title);
     {error, _Reason} ->
       ok
   end.
