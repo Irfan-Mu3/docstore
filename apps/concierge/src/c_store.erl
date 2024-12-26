@@ -18,9 +18,9 @@ lookup(Key) ->
   end.
 
 lookup_reverse(Pid) ->
-  case ets:lookup(?TABLE_ID, Pid) of
-    [{Key, Pid}] -> {ok, Key};
-    [] -> {error, not_found}
+  case ets:match(?TABLE_ID, {'$1', Pid}) of
+    [[Key]] -> {ok, Key};
+    [[]] -> {error, not_found}
   end.
 
 % Whilst, there's only one entry, we don't have indexes, and have to search for the Pid associated with the Value

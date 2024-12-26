@@ -2,7 +2,7 @@
 
 -behavior(gen_server).
 
--export([start_link/0, create/0, update/2, fetch/1, delete/1]).
+-export([start_link/0, create/0, update/2, fetch/1, delete/1, remove_doc/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
          code_change/3]).
 
@@ -20,6 +20,9 @@ create() ->
 update(Pid, {Title, LineNum, Idx}) ->
   % Update Document Catalogue with new entries (Books/Documents/Articles)
   gen_server:cast(Pid, {update, {Title, LineNum, Idx}}).
+
+remove_doc(Pid, Title) ->
+  gen_server:cast(Pid, {remove, Title}).
 
 fetch(Pid) ->
   gen_server:call(Pid, fetch).
@@ -57,14 +60,16 @@ handle_cast({update, {Title, LineNum, Idx}}, #state{doc_catalogue = DocCatalogue
                      DefaultCatalog,
                      DocCatalogue),
   {noreply, State#state{doc_catalogue = NewDocCatalogue}};
+handle_cast({remove, Title}, #state{doc_catalogue = DocCatalogue} = State) ->
+  {noreply, State#state{doc_catalogue = maps:remove(Title, DocCatalogue)}};
 handle_cast(delete, State) ->
-  {stop, normal, State}. % calls terminate below
+  {stop, normal, State}. %calls terminate below
 
 handle_info(timeout, State) ->
   {stop, normal, State}.
 
 terminate(_Reason, _State) ->
-  l_store:delete(self()),
+  l_store:delete(token, self()),
   ok.
 
 code_change(_OldVsn, State, _Extra) ->
