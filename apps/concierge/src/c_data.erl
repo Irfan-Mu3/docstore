@@ -4,9 +4,9 @@
 -export([stopwords/0, test_document/0]).
 
 test_document() ->
-  {"Hello Document",
-   "Hello World!\n    All the oceans are blue, and so is the sky!\n "
-   "   The sun is shining and so do your eyes!\n    The end."}.
+  {"Autumn Haiku",
+    "Golden leaves swirl down,\n Autumn breath paints the earth warm,\n Twilight hums its song."
+  }.
 
 stopwords() ->
   ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any",

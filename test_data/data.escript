@@ -3,7 +3,6 @@
 concierge:insert_doc(Title,Doc).
 concierge:lookup_doc(Title).
 
-
 % Test deletion works
 concierge:delete(Title).
 concierge:lookup_doc(Title).
