@@ -20,7 +20,8 @@ insert_token(Token, Title, LineNum, Idx) ->
       l_store:insert(token, Token, Pid),
       l_token:update(Pid, {Title, LineNum, Idx})
   end,
-  l_store:insert(document, Title, Pid).
+  l_store:insert(document, Title, Pid),
+  ok.
 
 lookup(Token) ->
   try
