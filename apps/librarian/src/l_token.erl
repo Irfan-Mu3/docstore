@@ -42,28 +42,27 @@ handle_call(fetch, _From, State) ->
   {reply, {ok, DocCatalogue}, State}.
 
 handle_cast({update, {Title, LineNum, Idx}}, #state{doc_catalogue = DocCatalogue} = State) ->
-  UpdateDocFunc = 
-    fun(#document{locations = Locations, count = Count}) ->
-      OldCount = length(maps:get(LineNum, Locations, [])),
-       NewLocations = maps:update_with(
-        LineNum, 
-        fun(Indices) -> [Idx | lists:delete(Idx, Indices)] end, 
-        [Idx],
-        Locations
-      ),
-       NewCount = length(maps:get(LineNum, NewLocations)) - OldCount,
-       #document{count = Count + NewCount, locations = NewLocations}
-    end, 
- DefaultCatalog = #document{count = 1, locations = #{LineNum => [Idx]}},
- NewDocCatalogue = maps:update_with(Title,
-                     UpdateDocFunc,
-                     DefaultCatalog,
-                     DocCatalogue),
-  {noreply, State#state{doc_catalogue = NewDocCatalogue}};
+    UpdatedCatalogue = update_document_catalogue(Title, LineNum, Idx, DocCatalogue),
+    {noreply, State#state{doc_catalogue = UpdatedCatalogue}};
+
 handle_cast({remove, Title}, #state{doc_catalogue = DocCatalogue} = State) ->
-  {noreply, State#state{doc_catalogue = maps:remove(Title, DocCatalogue)}};
+    {noreply, State#state{doc_catalogue = maps:remove(Title, DocCatalogue)}};
+
 handle_cast(delete, State) ->
-  {stop, normal, State}. %calls terminate below
+    {stop, normal, State}. %calls terminate below
+
+update_document_catalogue(Title, LineNum, Idx, DocCatalogue) ->
+    maps:update_with(Title,
+        fun(Doc) -> update_document(Doc, LineNum, Idx) end,
+        #document{count = 1, locations = #{LineNum => [Idx]}},
+        DocCatalogue).
+
+update_document(#document{locations = Locations, count = Count} = Doc, LineNum, Idx) ->
+    ExistingIndices = maps:get(LineNum, Locations, []),
+    NewIndices = [Idx | lists:delete(Idx, ExistingIndices)],
+    NewLocations = maps:put(LineNum, NewIndices, Locations),
+    NewCount = Count + (length(NewIndices) - length(ExistingIndices)),
+    Doc#document{locations = NewLocations, count = NewCount}.
 
 handle_info(timeout, State) ->
   {stop, normal, State}.

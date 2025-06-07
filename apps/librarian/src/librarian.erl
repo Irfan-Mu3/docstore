@@ -102,30 +102,33 @@ get_frequency_score(DocMap) ->
 
 % TODO: Get rid of duplicate tokens, or stop words, somewhere
 get_search_results(Tokens) ->
-  GetDocCatalogsFun =
-    fun(Token, Acc) ->
-       case librarian:lookup(Token) of
-         {ok, DocCatalog} -> [DocCatalog | Acc];
-         _ -> Acc
-       end
-    end,
-  DocCatalogs = lists:foldl(GetDocCatalogsFun, [], Tokens),
-  get_sorted_results(DocCatalogs).
+    DocCatalogs = fetch_doc_catalogs(Tokens),
+    MergedDocMap = merge_doc_catalogs(DocCatalogs),
+    get_frequency_score(MergedDocMap).
 
-get_sorted_results(DocCatalogs) ->
-  DocMap = lists:foldl(fun merge_doc_maps/2, #{}, DocCatalogs),
-  erlang:display(DocMap),
-  get_frequency_score(DocMap).
+fetch_doc_catalogs(Tokens) ->
+    lists:foldl(fun fetch_doc_catalog/2, [], Tokens).
+
+fetch_doc_catalog(Token, Acc) ->
+    case librarian:lookup(Token) of
+        {ok, DocCatalog} -> [DocCatalog | Acc];
+        _ -> Acc
+    end.
+
+merge_doc_catalogs(DocCatalogs) ->
+  lists:foldl(fun merge_doc_maps/2, #{}, DocCatalogs).
 
 merge_doc_maps(DocumentSet, Acc) ->
-  % For each pair of DocCatalogs, if they keys are identical merge them
-  MergeMapFunc =
-    fun(_, DocA, DocB) ->
-       #document{count = DocA#document.count + DocB#document.count,
-                 locations =
-                   maps:merge_with(fun(_, LocA, LocB) -> lists:append(LocA, LocB) end,
-                                   DocA#document.locations,
-                                   DocB#document.locations)}
-    end,
+  maps:merge_with(fun merge_documents/3, DocumentSet, Acc).
 
-  maps:merge_with(MergeMapFunc, DocumentSet, Acc).
+merge_documents(_Key, DocA, DocB) ->
+    % For each pair of DocCatalogs, if they keys are identical merge them
+    #document{
+        count = DocA#document.count + DocB#document.count,
+        locations = maps:merge_with(
+            fun(_Line, LocA, LocB) -> lists:append(LocA, LocB) end,
+            DocA#document.locations,
+            DocB#document.locations
+        )
+    }.
+
